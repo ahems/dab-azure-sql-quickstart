@@ -18,10 +18,29 @@ param deploymentUserPrincipalId string = ''
 param apiServiceName string = 'api'
 param webServiceName string = 'web'
 
+@secure()
+param repositoryToken string = ''
+
+param repositoryUrl string
+param branchName string = 'main'
+
 var resourceToken = toLower(uniqueString(resourceGroup().id, environmentName, location))
 var tags = {
   'azd-env-name': environmentName
   repo: 'https://github.com/azure-samples/dab-azure-sql-quickstart'
+}
+
+module swa 'modules/swa.bicep' = {
+  name: 'static-web-app'
+  params: {
+    userAssignedResourceId: managedIdentity.outputs.resourceId
+    location: location
+    repositoryUrl: repositoryUrl
+    branchName: branchName
+    tags: tags
+    resourceToken: resourceToken
+    repositoryToken: repositoryToken
+  }
 }
 
 module managedIdentity 'br/public:avm/res/managed-identity/user-assigned-identity:0.4.0' = {
@@ -33,6 +52,7 @@ module managedIdentity 'br/public:avm/res/managed-identity/user-assigned-identit
   }
 }
 
+/*
 module server 'br/public:avm/res/sql/server:0.12.0' = {
   name: 'sql-server'
   params: {
@@ -228,9 +248,11 @@ module containerAppsWebApp 'br/public:avm/res/app/container-app:0.12.0' = {
   }
 }
 
+
 // Azure Container Apps outputs
 output AZURE_CONTAINER_APPS_API_ENDPOINT string = containerAppsApiApp.outputs.fqdn
 output AZURE_CONTAINER_APPS_WEB_ENDPOINT string = containerAppsWebApp.outputs.fqdn
 
 // Azure Container Registry outputs
 output AZURE_CONTAINER_REGISTRY_ENDPOINT string = containerRegistry.outputs.loginServer
+*/

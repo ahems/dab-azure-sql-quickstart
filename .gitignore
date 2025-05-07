@@ -6,3 +6,4 @@ src/web/wwwroot
 
 # dotenv files
 .env
+__blobstorage__/
